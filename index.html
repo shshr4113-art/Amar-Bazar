@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার বাজার - অনলাইন শপিং</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { --primary-color: #25D366; --secondary-color: #075E54; --dark-color: #333; --accent-color: #e74c3c; }
+        body { background-color: #f8f9fa; color: var(--dark-color); padding-bottom: 60px; scroll-behavior: smooth; }
+        
+        header { background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; max-width: 1200px; margin: 0 auto; }
+        .logo { font-size: 24px; font-weight: bold; color: var(--secondary-color); display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 15px; }
+        .nav-link-btn { text-decoration: none; color: var(--secondary-color); font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--secondary-color); transition: 0.3s; }
+        .nav-link-btn:hover { background-color: var(--secondary-color); color: white; }
+
+        .hero-banner { background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1200') center/cover; color: white; text-align: center; padding: 50px 20px; }
+        .hero-banner h1 { font-size: 30px; margin-bottom: 8px; }
+
+        .category-container { max-width: 1200px; margin: 30px auto; padding: 0 15px; }
+        .category-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-btn { padding: 8px 20px; border: 2px solid var(--secondary-color); background-color: white; color: var(--secondary-color); font-size: 15px; font-weight: bold; border-radius: 25px; cursor: pointer; transition: all 0.3s; }
+        .tab-btn.active, .tab-btn:hover { background-color: var(--secondary-color); color: white; }
+
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .product-image { width: 100%; height: 200px; object-fit: cover; }
+        .product-info { padding: 15px; }
+        .product-title { font-size: 17px; margin-bottom: 6px; color: #2c3e50; font-weight: 600; }
+        
+        .price-box { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .product-price { font-size: 18px; font-weight: bold; color: var(--accent-color); }
+        .old-price { font-size: 14px; color: #888; text-decoration: line-through; }
+        
+        .order-btn { width: 100%; padding: 10px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .about-section { background: white; max-width: 1200px; margin: 40px auto; padding: 30px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .about-section h2 { color: var(--secondary-color); margin-bottom: 15px; font-size: 24px; border-bottom: 2px solid var(--secondary-color); display: inline-block; padding-bottom: 5px; }
+        .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 15px; }
+        .about-box { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--secondary-color); }
+        .about-box h3 { font-size: 18px; margin-bottom: 8px; color: #333; }
+        .about-box p { font-size: 14px; color: #666; line-height: 1.6; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; }
+
+        .floating-chat { position: fixed; bottom: 20px; right: 20px; background-color: var(--primary-color); color: white; padding: 12px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; z-index: 1000; }
+        .loading { text-align: center; grid-column: 1/-1; padding: 40px; font-size: 18px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="logo"><i class="fa-solid fa-bag-shopping"></i> আমার বাজার</div>
+            <div class="nav-links">
+                <a href="#aboutSection" class="nav-link-btn"><i class="fa-solid fa-circle-info"></i> About Us</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="hero-banner">
+        <h1>আমাদের সেরা কালেকশন দেখুন</h1>
+        <p>সরাসরি WhatsApp-এ সহজে অর্ডার করুন</p>
+    </div>
+
+    <div class="category-container">
+        <div class="category-tabs">
+            <button class="tab-btn active" onclick="filterCategory('all', this)">সব প্রোডাক্ট</button>
+            <button class="tab-btn" onclick="filterCategory('men', this)">Men (ছেলেদের)</button>
+            <button class="tab-btn" onclick="filterCategory('women', this)">Women (মেয়েদের)</button>
+            <button class="tab-btn" onclick="filterCategory('kids', this)">Kids (শিশুদের)</button>
+        </div>
+
+        <div class="product-grid" id="productGrid">
+            <div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> প্রোডাক্ট লোড হচ্ছে...</div>
+        </div>
+    </div>
+
+    <div class="about-section" id="aboutSection">
+        <h2><i class="fa-solid fa-store"></i> আমাদের সম্পর্কে (About Us)</h2>
+        <div class="about-grid">
+            <div class="about-box">
+                <h3><i class="fa-solid fa-bullseye"></i> আমাদের লক্ষ্য</h3>
+                <p>আমরা শতভাগ গুণগত মানসম্পন্ন ছেলেদের, মেয়েদের ও শিশুদের পোশাক ও প্রয়োজনীয় পণ্য সাশ্রয়ী মূল্যে প্রদান করি।</p>
+            </div>
+            <div class="about-box">
+                <h3><i class="fa-solid fa-truck-fast"></i> ডেলিভারি প্রসেস</h3>
+                <p>সারাদেশে ক্যাশ অন ডেলিভারিতে হোম ডেলিভারি দেওয়া হয়। ঢাকা সিটির ভেতরে ১-২ দিন এবং ঢাকার বাইরে ২-৪ দিনের মধ্যে ডেলিভারি সম্পন্ন হয়।</p>
+            </div>
+            <div class="about-box">
+                <h3><i class="fa-solid fa-cart-shopping"></i> কীভাবে অর্ডার করবেন?</h3>
+                <p>পছন্দের প্রোডাক্টের নিচে থাকা <b>"Order Now"</b> বাটনে ক্লিক করে নাম, মোবাইল নম্বর ও ঠিকানা পূরণ করে সরাসরি আমাদের WhatsApp-এ মেসেজ পাঠান।</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeOrderModal()">&times;</span>
+            <h3 style="margin-bottom: 15px;">অর্ডার ফরম</h3>
+            <form onsubmit="sendWhatsAppOrder(event)">
+                <input type="hidden" id="modalProdTitle">
+                <input type="hidden" id="modalProdPrice">
+                <input type="hidden" id="modalProdOldPrice">
+                <div class="form-group">
+                    <label>আপনার নাম:</label>
+                    <input type="text" id="custName" required placeholder="আপনার নাম">
+                </div>
+                <div class="form-group">
+                    <label>মোবাইল নম্বর:</label>
+                    <input type="tel" id="custPhone" required placeholder="017XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>সম্পূর্ণ ঠিকানা / লোকেশন:</label>
+                    <textarea id="custAddress" rows="2" required placeholder="বাসা নং, গ্রাম/রোড, থানা, জেলা"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ফেসবুক আইডি লিঙ্ক (Optional):</label>
+                    <input type="url" id="custFB" placeholder="https://facebook.com/yourid">
+                </div>
+                <button type="submit" class="order-btn" style="margin-top: 10px;">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp-এ অর্ডার করুন
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <a href="https://wa.me/8801891962606" target="_blank" class="floating-chat">
+        <i class="fa-brands fa-whatsapp" style="font-size: 20px;"></i> সরাসরি মেসেজ করুন
+    </a>
+
+    <script>
+        const ADMIN_WHATSAPP = "8801891962606";
+        const SHEET_ID = "YOUR_GOOGLE_SHEET_ID_HERE"; 
+        
+        let allProducts = [];
+
+        async function fetchProducts() {
+            if(SHEET_ID === "YOUR_GOOGLE_SHEET_ID_HERE") {
+                allProducts = [
+                    { id: 1, name: "কটন ক্যাজুয়াল শার্ট", category: "men", price: 1000, discount_price: 850, img: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=500" },
+                    { id: 2, name: "ডিজাইনার শাড়ি", category: "women", price: 3000, discount_price: 2500, img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500" },
+                    { id: 3, name: "বাচ্চাদের ফ্রক", category: "kids", price: 650, discount_price: "", img: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=500" }
+                ];
+                displayProducts(allProducts);
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://opensheet.elk.sh/${SHEET_ID}/1`);
+                const data = await response.json();
+                allProducts = data;
+                displayProducts(allProducts);
+            } catch (error) {
+                document.getElementById('productGrid').innerHTML = '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে! Google Sheet ID চেক করুন।</p>';
+            }
+        }
+
+        function displayProducts(items) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+
+            if(!items || items.length === 0) {
+                grid.innerHTML = '<p class="loading">কোনো প্রোডাক্ট পাওয়া যায়নি!</p>';
+                return;
+            }
+
+            items.forEach(p => {
+                let mainPrice = p.discount_price && p.discount_price !== "" ? p.discount_price : p.price;
+                let priceHTML = `<span class="product-price">৳ ${mainPrice}</span>`;
+                
+                if(p.discount_price && p.discount_price !== "" && p.discount_price !== p.price) {
+                    priceHTML += `<span class="old-price">৳ ${p.price}</span>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="product-card">
+                        <img src="${p.img}" class="product-image" alt="${p.name}" onerror="this.src='https://via.placeholder.com/250x200?text=No+Image'">
+                        <div class="product-info">
+                            <div class="product-title">${p.name}</div>
+                            <div class="price-box">${priceHTML}</div>
+                            <button class="order-btn" onclick="openOrderModal('${p.name}', '${mainPrice}', '${p.discount_price ? p.price : ''}')">
+                                <i class="fa-brands fa-whatsapp"></i> Order Now
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterCategory(cat, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if(cat === 'all') {
+                displayProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => p.category && p.category.toLowerCase().trim() === cat);
+                displayProducts(filtered);
+            }
+        }
+
+        function openOrderModal(title, price, oldPrice) {
+            document.getElementById('modalProdTitle').value = title;
+            document.getElementById('modalProdPrice').value = price;
+            document.getElementById('modalProdOldPrice').value = oldPrice;
+            document.getElementById('orderModal').style.display = 'flex';
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        function sendWhatsAppOrder(e) {
+            e.preventDefault();
+            const title = document.getElementById('modalProdTitle').value;
+            const price = document.getElementById('modalProdPrice').value;
+            const oldPrice = document.getElementById('modalProdOldPrice').value;
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const address = document.getElementById('custAddress').value;
+            const fb = document.getElementById('custFB').value;
+
+            let priceDetails = `৳ ${price}`;
+            if(oldPrice) {
+                priceDetails += ` (আগের দাম: ৳ ${oldPrice})`;
+            }
+
+            let msg = `*-- নতুন প্রোডাক্ট অর্ডার --*%0A%0A`;
+            msg += `*প্রোডাক্ট:* ${title}%0A`;
+            msg += `*মূল্য:* ${priceDetails}%0A%0A`;
+            msg += `*কাস্টমারের নাম:* ${name}%0A`;
+            msg += `*ফোন নম্বর:* ${phone}%0A`;
+            msg += `*ঠিকানা:* ${address}%0A`;
+            if(fb) msg += `*ফেসবুক লিঙ্ক:* ${fb} (Optional)%0A`;
+
+            window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
+            closeOrderModal();
+        }
+
+        fetchProducts();
+    </script>
+</body>
+</html>
