@@ -20,11 +20,11 @@
     <header class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
-                <i class="fa-solid font-bag-shopping"></i> Amar Bazar
+                <i class="fa-solid fa-bag-shopping"></i> Amar Bazar
             </h1>
-            <div id="cart-count" class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">
-                Products Live
-            </div>
+            <a href="https://wa.me/8801891962606" target="_blank" class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2 transition-all">
+                <i class="fa-brands fa-whatsapp text-lg"></i> Contact Us
+            </a>
         </div>
 
         <!-- Navigation Tabs (3 Parts / Layers) -->
@@ -128,6 +128,8 @@
 
         function parseCSV(text) {
             const lines = text.trim().split('\n');
+            if (lines.length < 2) return [];
+            
             const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
             const data = [];
 
@@ -223,7 +225,7 @@
             const address = document.getElementById('cust-address').value;
             const social = document.getElementById('cust-social').value;
 
-            // Updated with your exact WhatsApp Number
+            // Direct WhatsApp Number: 01891962606
             const ownerPhone = "8801891962606";
 
             let msg = `*New Order Details*\n\n`;
