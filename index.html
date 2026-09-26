@@ -448,6 +448,7 @@
         <input type="hidden" id="modalProdTitle" />
         <input type="hidden" id="modalProdPrice" />
         <input type="hidden" id="modalProdOldPrice" />
+        <input type="hidden" id="modalProdImg" />
 
         <div class="form-group">
           <label>আপনার নাম:</label>
@@ -622,6 +623,7 @@
       document.getElementById("modalProdTitle").value = title;
       document.getElementById("modalProdPrice").value = price;
       document.getElementById("modalProdOldPrice").value = oldPrice;
+      document.getElementById("modalProdImg").value = img;
 
       // Show product preview in modal
       document.getElementById("previewImg").src = img;
@@ -646,6 +648,7 @@
       const title = document.getElementById("modalProdTitle").value;
       const price = document.getElementById("modalProdPrice").value;
       const oldPrice = document.getElementById("modalProdOldPrice").value;
+      const img = document.getElementById("modalProdImg").value;
       const name = document.getElementById("custName").value.trim();
       const phone = document.getElementById("custPhone").value.trim();
       const address = document.getElementById("custAddress").value.trim();
@@ -662,6 +665,7 @@
 ━━━━━━━━━━━━━━━━
 *প্রোডাক্ট:* ${title}
 *মূল্য:* ${priceDetails}
+*ছবি লিঙ্ক:* ${img}
 
 👤 *কাস্টমারের তথ্য*
 ━━━━━━━━━━━━━━━━
