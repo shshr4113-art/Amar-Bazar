@@ -259,10 +259,12 @@
     .modal-content {
       position: relative;
       width: 90%;
-      max-width: 420px;
+      max-width: 500px;
       background: var(--white);
       border-radius: 12px;
       padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .close-modal {
@@ -278,6 +280,40 @@
       margin-bottom: 16px;
       color: var(--secondary-color);
       font-size: 24px;
+    }
+
+    .modal-product-preview {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: center;
+      border: 1px solid #e0e0e0;
+    }
+
+    .modal-product-preview img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      max-height: 220px;
+      object-fit: cover;
+    }
+
+    .modal-product-info {
+      margin-top: 12px;
+    }
+
+    .modal-product-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 6px;
+    }
+
+    .modal-product-price {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent-color);
     }
 
     .form-group {
@@ -335,6 +371,11 @@
         flex-direction: column;
         gap: 12px;
       }
+
+      .modal-content {
+        width: 95%;
+        padding: 18px;
+      }
     }
   </style>
 </head>
@@ -377,15 +418,15 @@
     <div class="about-grid">
       <div class="about-box">
         <h3><i class="fa-solid fa-bullseye"></i> আমাদের লক্ষ্য</h3>
-        <p>আমরা শতভাগ গুণগত মানসম্পন্ন ছেলেদের, মেয়েদের ও শিশুদের পোশাক ও প্রয়োজনীয় জিনিসপত্র সরাসরি অনলাইনে বিক্রয় করি।</p>
+        <p>আমরা শতভাগ গুণগত মানসম্পন্ন ছেলেদের, মেয়েদের ও শিশুদের পোশাক ও প্রয়োজনীয় জিনিসপত্র সরবরাহ করি।</p>
       </div>
       <div class="about-box">
         <h3><i class="fa-solid fa-truck-fast"></i> ডেলিভারি প্রসেস</h3>
-        <p>সারাদেশে ক্যাশ অন ডেলিভারিতে হোম ডেলিভারি দেওয়া হয়। ঢাকা সিটির ভেতর ২৪ ঘণ্টায় এবং সারাদেশে ২–৩ দিনে ডেলিভারি পাওয়া যায়।</p>
+        <p>সারাদেশে ক্যাশ অন ডেলিভারিতে হোম ডেলিভারি দেওয়া হয়। ঢাকা সিটির ভেতর ১-২ দিন এবং বাইরে ৩-৫ দিনে ডেলিভারি পাবেন।</p>
       </div>
       <div class="about-box">
         <h3><i class="fa-solid fa-cart-shopping"></i> কীভাবে অর্ডার করবেন?</h3>
-        <p>পছন্দের প্রোডাক্টের নিচে থাকা <b>"Order Now"</b> বাটনে ক্লিক করে আপনার নাম, মোবাইল নম্বর এবং ঠিকানা লিখে সাবমিট করুন। অর্ডারটি সরাসরি WhatsApp-এ পাঠানো হবে।</p>
+        <p>পছন্দের প্রোডাক্টের নিচে থাকা <b>"Order Now"</b> বাটনে ক্লিক করে আপনার নাম, মোবাইল নম্বর এবং ঠিকানা দিয়ে অর্ডার সাবমিট করুন।</p>
       </div>
     </div>
   </div>
@@ -394,6 +435,14 @@
     <div class="modal-content">
       <span class="close-modal" onclick="closeOrderModal()">&times;</span>
       <h3>অর্ডার ফরম</h3>
+
+      <div class="modal-product-preview">
+        <img id="previewImg" src="" alt="Product" />
+        <div class="modal-product-info">
+          <div class="modal-product-name" id="previewName"></div>
+          <div class="modal-product-price" id="previewPrice"></div>
+        </div>
+      </div>
 
       <form onsubmit="sendWhatsAppOrder(event)">
         <input type="hidden" id="modalProdTitle" />
@@ -490,9 +539,10 @@
           priceHTML += `<span class="old-price">৳ ${oldPrice}</span>`;
         }
 
-        const productNameEscaped = String(p.name).replace(/'/g, "\\'");
+        const productNameEscaped = String(p.name).replace(/'/g, "\\'").replace(/"/g, '\\"');
         const productPriceEscaped = String(price).replace(/'/g, "\\'");
         const oldPriceEscaped = String(oldPrice).replace(/'/g, "\\'");
+        const productImgEscaped = String(p.img).replace(/'/g, "\\'");
 
         grid.innerHTML += `
           <div class="product-card">
@@ -500,7 +550,7 @@
             <div class="product-info">
               <div class="product-title">${p.name}</div>
               <div class="price-box">${priceHTML}</div>
-              <button class="order-btn" onclick="openOrderModal('${productNameEscaped}', '${productPriceEscaped}', '${oldPriceEscaped}')">
+              <button class="order-btn" onclick="openOrderModal('${productNameEscaped}', '${productPriceEscaped}', '${oldPriceEscaped}', '${productImgEscaped}')">
                 <i class="fa-brands fa-whatsapp"></i> Order Now
               </button>
             </div>
@@ -550,7 +600,7 @@
           }
         } else {
           document.getElementById("productGrid").innerHTML =
-            '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে। Google Sheet "Anyone with the link" হিসেবে share করা আছে কি না চেক করুন।</p>';
+            '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে। Google Sheet "Anyone with the link" হিসেবে share করা আছে কিনা চেক করুন।</p>';
         }
       }
     }
@@ -568,10 +618,21 @@
       displayProducts(filtered);
     }
 
-    function openOrderModal(title, price, oldPrice) {
+    function openOrderModal(title, price, oldPrice, img) {
       document.getElementById("modalProdTitle").value = title;
       document.getElementById("modalProdPrice").value = price;
       document.getElementById("modalProdOldPrice").value = oldPrice;
+
+      // Show product preview in modal
+      document.getElementById("previewImg").src = img;
+      document.getElementById("previewName").textContent = title;
+      
+      let priceText = `৳ ${price}`;
+      if (oldPrice) {
+        priceText += ` (আগের দাম: ৳ ${oldPrice})`;
+      }
+      document.getElementById("previewPrice").textContent = priceText;
+
       document.getElementById("orderModal").style.display = "flex";
     }
 
@@ -595,15 +656,24 @@
         priceDetails += ` (আগের দাম: ৳ ${oldPrice})`;
       }
 
-      let msg = "*-- নতুন প্রোডাক্ট অর্ডার --*%0A%0A";
-      msg += `*প্রোডাক্ট:* ${title}%0A`;
-      msg += `*মূল্য:* ${priceDetails}%0A%0A`;
-      msg += `*কাস্টমারের নাম:* ${name}%0A`;
-      msg += `*ফোন নম্বর:* ${phone}%0A`;
-      msg += `*ঠিকানা:* ${address}%0A`;
+      let msg = `🛍️ *নতুন প্রোডাক্ট অর্ডার*
+
+📦 *প্রোডাক্টের তথ্য*
+━━━━━━━━━━━━━━━━
+*প্রোডাক্ট:* ${title}
+*মূল্য:* ${priceDetails}
+
+👤 *কাস্টমারের তথ্য*
+━━━━━━━━━━━━━━━━
+*নাম:* ${name}
+*ফোন নম্বর:* ${phone}
+*ঠিকানা:* ${address}`;
+
       if (fb) {
-        msg += `*ফেসবুক লিঙ্ক:* ${fb}%0A`;
+        msg += `\n*ফেসবুক:* ${fb}`;
       }
+
+      msg += `\n\n✅ অনুগ্রহ করে অর্ডারটি কনফার্ম করুন।`;
 
       const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`;
       window.open(whatsappUrl, "_blank");
