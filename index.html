@@ -137,30 +137,66 @@
         <i class="fa-brands fa-whatsapp" style="font-size: 20px;"></i> সরাসরি মেসেজ করুন
     </a>
 
-    <script>
+   etE <script>
         const ADMIN_WHATSAPP = "8801891962606";
         const SHEET_ID = "1xby10YuaEb2e33UalrVEG5gW19flRmybp9Ow-R_p27Y"; 
+        
+        // কত মিনিট পর পর নতুন প্রোডাক্ট চেক করবে (৫ মিনিট রাখা সবচেয়ে নিরাপদ)
+        const CACHE_EXPIRY_MINUTES = 5; 
         
         let allProducts = [];
 
         async function fetchProducts() {
             if(SHEET_ID === "YOUR_GOOGLE_SHEET_ID_HERE") {
                 allProducts = [
-                    { id: 1, name: "কটন ক্যাজুয়াল শার্ট", category: "men", price: 1000, discount_price: 850, img: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=500" },
-                    { id: 2, name: "ডিজাইনার শাড়ি", category: "women", price: 3000, discount_price: 2500, img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500" },
-                    { id: 3, name: "বাচ্চাদের ফ্রক", category: "kids", price: 650, discount_price: "", img: "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=500" }
+                    { id: 1, name: "কটন ক্যাজুয়াল শার্ট", category: "men", price: 1000, discount_price: 850, img: "https://unsplash.com" },
+                    { id: 2, name: "ডিজাইনার শাড়ি", category: "women", price: 3000, discount_price: 2500, img: "https://unsplash.com" },
+                    { id: 3, name: "বাচ্চাদের ফ্রক", category: "kids", price: 650, discount_price: "", img: "https://unsplash.com" }
                 ];
                 displayProducts(allProducts);
                 return;
             }
 
+            const now = new Date().getTime();
+            const cachedData = localStorage.getItem('cached_products_json');
+            const cacheTime = localStorage.getItem('products_cache_time');
+
+            // ১. ব্রাউজারে ব্যাকআপ ডাটা থাকলে এবং তা ৫ মিনিটের চেয়ে নতুন হলে গুগল বা থার্ড-পার্টি সার্ভারে নক করবে না
+            if (cachedData && cacheTime && (now - cacheTime < CACHE_EXPIRY_MINUTES * 60 * 1000)) {
+                console.log("ক্যাশ (Cache) মেমরি থেকে দ্রুত ডাটা লোড করা হলো।");
+                allProducts = JSON.parse(cachedData);
+                displayProducts(allProducts);
+                return; 
+            }
+
+            // ২. যদি ৫ মিনিট পার হয়ে যায় অথবা কাস্টমার একদম প্রথমবার আসে, তবে নতুন ডাটা নিয়ে আসবে
             try {
-                const response = await fetch(`https://opensheet.elk.sh/${SHEET_ID}/1`);
+                console.log("সার্ভার থেকে নতুন ডাটা চেক করা হচ্ছে...");
+                const response = await fetch(`https://elk.sh{SHEET_ID}/1`);
+                
+                if (!response.ok) {
+                    throw new Error('সার্ভার থেকে ডাটা পাওয়া যায়নি।');
+                }
+
                 const data = await response.json();
                 allProducts = data;
+                
+                // নতুন ডাটা মেমরিতে ব্যাকআপ রাখা হচ্ছে
+                localStorage.setItem('cached_products_json', JSON.stringify(data));
+                localStorage.setItem('products_cache_time', now.toString());
+                
                 displayProducts(allProducts);
+                console.log("নতুন প্রোডাক্ট সফলভাবে ওয়েবসাইটে আপডেট হয়েছে।");
             } catch (error) {
-                document.getElementById('productGrid').innerHTML = '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে! Google Sheet ID চেক করুন।</p>';
+                console.error("ডাটা লোড করতে সমস্যা হয়েছে, ব্যাকআপ চেক করা হচ্ছে:", error);
+                
+                // ৩. যদি গুগল বা থার্ড-পার্টি লিংকটি ডাউন থাকে, তবে সাইট ক্র্যাশ না করে ব্যাকআপ ডাটা দেখাবে
+                if (cachedData) {
+                    allProducts = JSON.parse(cachedData);
+                    displayProducts(allProducts);
+                } else {
+                    document.getElementById('productGrid').innerHTML = '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে! দয়া করে পেজটি রিফ্রেশ করুন।</p>';
+                }
             }
         }
 
@@ -183,7 +219,7 @@
 
                 grid.innerHTML += `
                     <div class="product-card">
-                        <img src="${p.img}" class="product-image" alt="${p.name}" onerror="this.src='https://via.placeholder.com/250x200?text=No+Image'">
+                        <img src="${p.img}" class="product-image" alt="${p.name}" onerror="this.src='https://placeholder.com'">
                         <div class="product-info">
                             <div class="product-title">${p.name}</div>
                             <div class="price-box">${priceHTML}</div>
@@ -242,7 +278,7 @@
             msg += `*ঠিকানা:* ${address}%0A`;
             if(fb) msg += `*ফেসবুক লিঙ্ক:* ${fb} (Optional)%0A`;
 
-            window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
+            window.open(`https://wa.me{ADMIN_WHATSAPP}?text=${msg}`, '_blank');
             closeOrderModal();
         }
 
