@@ -135,6 +135,11 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 6px 18px var(--shadow);
+      transition: transform 0.3s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
     }
 
     .product-image {
@@ -310,6 +315,11 @@
       align-items: center;
       gap: 10px;
       z-index: 1500;
+      transition: 0.3s ease;
+    }
+
+    .floating-chat:hover {
+      background: #1ea952;
     }
 
     .loading {
@@ -424,45 +434,42 @@
 
   <script>
     const ADMIN_WHATSAPP = "8801891962606";
-    const GOOGLE_SHEET_API_KEY = "YOUR_API_KEY"; // <-- তোমার Google API key বসাও
     const SHEET_ID = "1xby10YuaEb2e33UalrVEG5gW19flRmybp9Ow-R_p27Y";
-    const SHEET_NAME = "Sheet1"; // চাইলে এই নাম পরিবর্তন করো
     const CACHE_EXPIRY_MINUTES = 5;
 
     let allProducts = [];
 
     function getSheetUrl() {
-      return `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?alt=json&key=${GOOGLE_SHEET_API_KEY}`;
+      return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
     }
 
-    function parseProductsFromSheet(data) {
-      if (!data || !data.values || data.values.length <= 1) {
-        return [];
-      }
+    function parseCSV(csv) {
+      const lines = csv.trim().split('\n');
+      if (lines.length <= 1) return [];
 
-      const headers = data.values[0].map(h => String(h).trim().toLowerCase());
-      const rows = data.values.slice(1);
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const products = [];
 
-      return rows
-        .filter(row => row && row.some(cell => String(cell).trim() !== ""))
-        .map((row, index) => {
-          const product = { id: index + 1 };
-
-          headers.forEach((header, i) => {
-            const value = row[i] ?? "";
-            product[header] = value;
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values.some(v => v !== '')) {
+          const product = {};
+          headers.forEach((header, index) => {
+            product[header] = values[index] || '';
           });
 
-          return {
-            id: index + 1,
-            name: product.name || "",
-            category: (product.category || "all").toLowerCase().trim(),
+          products.push({
+            id: i,
+            name: product.name || '',
+            category: (product.category || 'all').toLowerCase().trim(),
             price: Number(product.price) || 0,
-            discount_price: product.discount_price ? Number(product.discount_price) : "",
-            img: product.img || "https://placehold.co/600x400/f0f0f0/333?text=No+Image"
-          };
-        })
-        .filter(p => p.name);
+            discount_price: product.discount_price ? Number(product.discount_price) : '',
+            img: product.img || 'https://placehold.co/600x400/f0f0f0/333?text=No+Image'
+          });
+        }
+      }
+
+      return products.filter(p => p.name);
     }
 
     function displayProducts(items) {
@@ -470,7 +477,7 @@
       grid.innerHTML = "";
 
       if (!items || items.length === 0) {
-        grid.innerHTML = '<p class="loading">কোনো প্রোডাক্ট পাওয়া যায়নি!</p>';
+        grid.innerHTML = '<p class="loading">কোনো প্রোডাক্ট পাওয়া যায়নি!</p>';
         return;
       }
 
@@ -503,16 +510,6 @@
     }
 
     async function fetchProducts() {
-      if (GOOGLE_SHEET_API_KEY === "YOUR_API_KEY") {
-        allProducts = [
-          { id: 1, name: "কটন ক্যাজুয়াল শার্ট", category: "men", price: 1000, discount_price: 850, img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800" },
-          { id: 2, name: "ডিজাইনার শাড়ি", category: "women", price: 3000, discount_price: 2500, img: "https://images.unsplash.com/photo-1609681865657-a42318f45deb?w=800" },
-          { id: 3, name: "বাচ্চাদের ফ্রক", category: "kids", price: 650, discount_price: "", img: "https://images.unsplash.com/photo-1519238263413-b37e4bde8651?w=800" }
-        ];
-        displayProducts(allProducts);
-        return;
-      }
-
       const now = Date.now();
       const cachedData = localStorage.getItem("cached_products_json");
       const cacheTime = localStorage.getItem("products_cache_time");
@@ -523,26 +520,25 @@
           displayProducts(allProducts);
           return;
         } catch (e) {
-          console.warn("Cached data invalid, fetching fresh data...");
+          console.warn("Cached data invalid");
         }
       }
 
       try {
         const response = await fetch(getSheetUrl());
-
         if (!response.ok) {
-          throw new Error("Google Sheet response failed");
+          throw new Error("Sheet fetch failed");
         }
 
-        const data = await response.json();
-        allProducts = parseProductsFromSheet(data);
+        const csv = await response.text();
+        allProducts = parseCSV(csv);
 
         localStorage.setItem("cached_products_json", JSON.stringify(allProducts));
         localStorage.setItem("products_cache_time", String(now));
 
         displayProducts(allProducts);
       } catch (error) {
-        console.error("Product fetch failed:", error);
+        console.error("Product fetch error:", error);
 
         if (cachedData) {
           try {
@@ -550,11 +546,11 @@
             displayProducts(allProducts);
           } catch (_) {
             document.getElementById("productGrid").innerHTML =
-              '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে। দয়া করে পরে আবার চেষ্টা করুন।</p>';
+              '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে। দয়া করে পরে আবার চেষ্টা করুন।</p>';
           }
         } else {
           document.getElementById("productGrid").innerHTML =
-            '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে। API Key বা Sheet Sharing ঠিক আছে কি না চেক করুন।</p>';
+            '<p class="loading">প্রোডাক্ট লোড করতে সমস্যা হয়েছে। Google Sheet "Anyone with the link" হিসেবে share করা আছে কি না চেক করুন।</p>';
         }
       }
     }
@@ -612,10 +608,8 @@
       const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`;
       window.open(whatsappUrl, "_blank");
       closeOrderModal();
-      document.getElementById("custName").value = "";
-      document.getElementById("custPhone").value = "";
-      document.getElementById("custAddress").value = "";
-      document.getElementById("custFB").value = "";
+
+      document.querySelector("form").reset();
     }
 
     fetchProducts();
